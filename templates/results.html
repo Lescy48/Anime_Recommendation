@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Anime Recommendations – Expert System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 30px 20px 60px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #e94560, #f5a623);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .header p { color: #a0aec0; font-size: 1rem; }
+
+        .preferences-summary {
+            max-width: 900px;
+            margin: 0 auto 32px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 20px 24px;
+        }
+        .preferences-summary h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+            margin-bottom: 14px;
+        }
+        .pref-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pref-tag {
+            background: rgba(233, 69, 96, 0.15);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            color: #f5a623;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .pref-question {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-right: 4px;
+        }
+
+        .grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 22px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+        .rank-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: linear-gradient(90deg, #e94560, #f5a623);
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+        .card-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+            background: #0f3460;
+        }
+        .card-img-placeholder {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+        }
+        .card-body {
+            padding: 18px;
+        }
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .score-bar-wrap {
+            margin-bottom: 10px;
+        }
+        .score-label {
+            font-size: 0.78rem;
+            color: #a0aec0;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .score-bar {
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560, #f5a623);
+            border-radius: 4px;
+        }
+        .genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .genre-tag {
+            background: rgba(255,255,255,0.08);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #cbd5e0;
+        }
+        .description {
+            font-size: 0.83rem;
+            color: #a0aec0;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .reasons {
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding-top: 10px;
+        }
+        .reasons-label {
+            font-size: 0.75rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .reason-item {
+            font-size: 0.8rem;
+            color: #68d391;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            margin-bottom: 3px;
+        }
+        .reason-item::before { content: "✓"; flex-shrink: 0; }
+
+        .actions {
+            max-width: 900px;
+            margin: 36px auto 0;
+            text-align: center;
+        }
+        .btn-restart {
+            display: inline-block;
+            background: linear-gradient(90deg, #e94560, #f5a623);
+            color: #fff;
+            text-decoration: none;
+            padding: 14px 44px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(233, 69, 96, 0.3);
+        }
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(233, 69, 96, 0.5);
+        }
+        .no-results {
+            text-align: center;
+            color: #a0aec0;
+            padding: 40px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎌 Your Anime Recommendations</h1>
+        <p>Based on your preferences, here are the best matches from our knowledge base</p>
+    </div>
+
+    {% if preferences %}
+    <div class="preferences-summary">
+        <h3>📋 Your Preferences</h3>
+        <div class="pref-tags">
+            {% for question, answer in preferences.items() %}
+            <span class="pref-tag">
+                <span class="pref-question">{{ question | truncate(30, true, '…') }}</span>
+                {{ answer }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if recommendations %}
+    <div class="grid">
+        {% for rec in recommendations %}
+        {% set anime = rec.anime %}
+        <div class="card">
+            <div class="rank-badge">{{ loop.index }}</div>
+            <div class="card-img-placeholder">🎬</div>
+            <div class="card-body">
+                <div class="card-title">{{ anime.title }}</div>
+
+                <div class="score-bar-wrap">
+                    <div class="score-label">
+                        <span>Match Score</span>
+                        <span>{{ rec.score }}</span>
+                    </div>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: {{ [((rec.score / max_score) * 100) | int, 100] | min }}%"></div>
+                    </div>
+                </div>
+
+                <div class="genres">
+                    <span class="genre-tag">{{ anime.type }}</span>
+                    {% for g in anime.genre[:3] %}
+                    <span class="genre-tag">{{ g }}</span>
+                    {% endfor %}
+                    <span class="genre-tag">{{ anime.year }}</span>
+                </div>
+
+                <p class="description">{{ anime.description }}</p>
+
+                {% if rec.reasons %}
+                <div class="reasons">
+                    <p class="reasons-label">Why this anime?</p>
+                    {% for reason in rec.reasons[:3] %}
+                    <div class="reason-item">{{ reason }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-results">
+        <p>😕 No matching anime found. Try different preferences!</p>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="/restart" class="btn-restart">🔄 Try Again</a>
+    </div>
+</body>
+</html>
