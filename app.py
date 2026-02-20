@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
-import os
+import requests
 
 app = Flask(__name__)
 DB_PATH = "anime.db"
@@ -28,11 +28,15 @@ def recommend():
     placeholders = ",".join("?" * len(selected_genres))
     query = f"""
         SELECT a.id, a.title, a.synopsis, a.rating, a.image_url,
-               GROUP_CONCAT(g.name, ', ') as genres,
+               (
+                   SELECT GROUP_CONCAT(g2.name, ', ')
+                   FROM anime_genres ag2
+                   JOIN genres g2 ON ag2.genre_id = g2.id
+                   WHERE ag2.anime_id = a.id
+               ) as genres,
                COUNT(DISTINCT ag.genre_id) as match_count
         FROM anime a
         JOIN anime_genres ag ON a.id = ag.anime_id
-        JOIN genres g ON ag.genre_id = g.id
         WHERE ag.genre_id IN (
             SELECT id FROM genres WHERE name IN ({placeholders})
         )
@@ -48,11 +52,36 @@ def recommend():
             "title": row["title"],
             "synopsis": row["synopsis"],
             "rating": row["rating"],
-            "image_url": row["image_url"],
+            "image_url": row["image_url"] or "",
             "genres": row["genres"],
             "match_count": row["match_count"]
         })
     return jsonify(result)
+
+@app.route("/get-image/<path:title>")
+def get_image(title):
+    conn = get_db()
+
+    row = conn.execute("SELECT image_url FROM anime WHERE title = ?", (title,)).fetchone()
+
+    if row and row["image_url"]:
+        conn.close()
+        return jsonify({"image": row["image_url"]})
+
+    try:
+        res = requests.get(
+            f"https://api.jikan.moe/v4/anime?q={title}&limit=1",
+            timeout=5
+        )
+        data = res.json()
+        img = data["data"][0]["images"]["jpg"]["image_url"]
+        conn.execute("UPDATE anime SET image_url = ? WHERE title = ?", (img, title))
+        conn.commit()
+        conn.close()
+        return jsonify({"image": img})
+    except:
+        conn.close()
+        return jsonify({"image": ""})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)

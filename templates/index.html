@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎌 Anime Expert System</title>
+    <title>Anime Recommendation</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
+    <header>
+        <h1 onclick="document.documentElement.scrollTop = 0; document.body.scrollTop = 0;">
+            Anime <span>Recommendation</span>
+        </h1>
+    </header>
+
     <div class="container">
-        <header>
-            <h1>🎌 Anime Expert System</h1>
-            <p class="subtitle">Pilih genre favoritmu dan temukan anime yang cocok!</p>
-        </header>
 
         <section class="genre-section">
-            <h2>🏷️ Pilih Genre</h2>
-            <p class="hint">Bisa pilih lebih dari satu genre</p>
+            <p class="genre-label">Pilih Genre</p>
             <div class="genre-grid" id="genreGrid">
                 {% for genre in genres %}
                 <button class="genre-btn" data-genre="{{ genre }}" onclick="toggleGenre(this)">
@@ -24,19 +26,23 @@
                 {% endfor %}
             </div>
             <div class="action-row">
-                <button class="search-btn" onclick="searchAnime()">🔍 Cari Anime</button>
-                <button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
-                <span class="selected-count" id="selectedCount">0 genre dipilih</span>
+                <button class="search-btn" onclick="searchAnime()">Cari Anime</button>
+                <button class="reset-btn" onclick="resetAll()">Reset</button>
+                <span class="selected-count" id="selectedCount"></span>
             </div>
         </section>
 
+        <div class="loading" id="loading" style="display:none;">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="no-results" id="noResults" style="display:none;">
+            <p>Tidak ada anime yang cocok dengan genre yang dipilih.</p>
+        </div>
+
         <section class="results-section" id="resultsSection" style="display:none;">
             <div class="results-header">
-                <h2>📺 Hasil Rekomendasi</h2>
                 <span class="results-count" id="resultsCount"></span>
-            </div>
-            <div class="sort-row">
-                <label>Urutkan: </label>
                 <select id="sortSelect" onchange="sortResults()">
                     <option value="match">Paling Cocok</option>
                     <option value="rating_desc">Rating Tertinggi</option>
@@ -44,79 +50,39 @@
                     <option value="title">A-Z</option>
                 </select>
             </div>
-            <div class="anime-grid" id="animeGrid"></div>
+            <div class="anime-list" id="animeList"></div>
         </section>
 
-        <div class="loading" id="loading" style="display:none;">
-            <div class="spinner"></div>
-            <p>Mencari anime...</p>
-        </div>
+    </div>
 
-        <div class="no-results" id="noResults" style="display:none;">
-            <p>😔 Tidak ada anime yang cocok dengan genre yang dipilih.</p>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" id="modal">
+            <div class="modal-img-wrapper">
+                <button class="modal-close" onclick="closeModalBtn()">✕</button>
+                <img class="modal-img hidden" id="modalImg" alt="">
+                <div class="modal-img-placeholder" id="modalImgPlaceholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.2" opacity="0.3">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-title" id="modalTitle"></div>
+                <div class="modal-meta" id="modalMeta"></div>
+                <div class="modal-genres" id="modalGenres"></div>
+                <p class="modal-synopsis-label">Synopsis</p>
+                <div class="modal-synopsis" id="modalSynopsis"></div>
+            </div>
         </div>
     </div>
 
-    <script src="/static/script.js"></script>
-</body>
-</html><!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎌 Anime Expert System</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🎌 Anime Expert System</h1>
-            <p class="subtitle">Pilih genre favoritmu dan temukan anime yang cocok!</p>
-        </header>
-
-        <section class="genre-section">
-            <h2>🏷️ Pilih Genre</h2>
-            <p class="hint">Bisa pilih lebih dari satu genre</p>
-            <div class="genre-grid" id="genreGrid">
-                {% for genre in genres %}
-                <button class="genre-btn" data-genre="{{ genre }}" onclick="toggleGenre(this)">
-                    {{ genre }}
-                </button>
-                {% endfor %}
-            </div>
-            <div class="action-row">
-                <button class="search-btn" onclick="searchAnime()">🔍 Cari Anime</button>
-                <button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
-                <span class="selected-count" id="selectedCount">0 genre dipilih</span>
-            </div>
-        </section>
-
-        <section class="results-section" id="resultsSection" style="display:none;">
-            <div class="results-header">
-                <h2>📺 Hasil Rekomendasi</h2>
-                <span class="results-count" id="resultsCount"></span>
-            </div>
-            <div class="sort-row">
-                <label>Urutkan: </label>
-                <select id="sortSelect" onchange="sortResults()">
-                    <option value="match">Paling Cocok</option>
-                    <option value="rating_desc">Rating Tertinggi</option>
-                    <option value="rating_asc">Rating Terendah</option>
-                    <option value="title">A-Z</option>
-                </select>
-            </div>
-            <div class="anime-grid" id="animeGrid"></div>
-        </section>
-
-        <div class="loading" id="loading" style="display:none;">
-            <div class="spinner"></div>
-            <p>Mencari anime...</p>
-        </div>
-
-        <div class="no-results" id="noResults" style="display:none;">
-            <p>😔 Tidak ada anime yang cocok dengan genre yang dipilih.</p>
-        </div>
-    </div>
+    <footer>
+        <p>&copy; 2026 Anime Recommendation. All rights reserved.</p>
+    </footer>
 
     <script src="/static/script.js"></script>
 </body>
