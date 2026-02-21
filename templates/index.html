@@ -55,7 +55,7 @@
 
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL ANIME -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
         <div class="modal" id="modal">
             <div class="modal-img-wrapper">
@@ -80,10 +80,30 @@
         </div>
     </div>
 
+    <!-- MODAL WARNING -->
+
+    <div class="warning-overlay" id="warningOverlay" onclick="closeWarning(event)">
+        <div class="warning-card">
+            <div class="warning-img-wrapper">
+                <img src="/static/images/luffy.png" alt="Luffy" class="warning-img">
+            </div>
+
+            <div class="warning-content">
+                <p class="warning-text">
+                    Pilih minimal 1 genre dulu!
+                </p>
+
+                <button class="warning-btn" onclick="closeWarningBtn()">
+                    Oke 
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <p>&copy; 2026 Anime Recommendation. All rights reserved.</p>
     </footer>
 
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js" defer></script>
 </body>
 </html>

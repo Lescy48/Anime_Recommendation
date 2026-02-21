@@ -1,6 +1,28 @@
 let selectedGenres = [];
 let currentResults = [];
 
+// ── WARNING MODAL ──
+function showWarning() {
+    document.getElementById('warningOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeWarning(e) {
+    if (e.target === document.getElementById('warningOverlay')) {
+        _closeWarning();
+    }
+}
+
+function closeWarningBtn() {
+    _closeWarning();
+}
+
+function _closeWarning() {
+    document.getElementById('warningOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// ── GENRE ──
 function toggleGenre(btn) {
     const genre = btn.dataset.genre;
     if (btn.classList.contains('active')) {
@@ -26,9 +48,10 @@ function resetAll() {
     document.getElementById('noResults').style.display = 'none';
 }
 
+// ── SEARCH ──
 async function searchAnime() {
     if (selectedGenres.length === 0) {
-        alert('Pilih minimal satu genre dulu.');
+        showWarning();
         return;
     }
 
@@ -46,7 +69,7 @@ async function searchAnime() {
         currentResults = data;
         displayResults(data);
     } catch {
-        alert('Terjadi error. Coba lagi.');
+        showWarning();
     } finally {
         document.getElementById('loading').style.display = 'none';
     }
@@ -129,12 +152,11 @@ function renderCards(data) {
     });
 }
 
-// ── MODAL ──
+// ── MODAL ANIME ──
 function openModal(anime) {
     const overlay = document.getElementById('modalOverlay');
     const hasImage = anime.image_url && anime.image_url !== '';
 
-    // Image
     const modalImg = document.getElementById('modalImg');
     const modalImgPlaceholder = document.getElementById('modalImgPlaceholder');
 
@@ -148,10 +170,8 @@ function openModal(anime) {
         modalImgPlaceholder.style.display = 'flex';
     }
 
-    // Title
     document.getElementById('modalTitle').textContent = anime.title;
 
-    // Meta
     document.getElementById('modalMeta').innerHTML = `
         <div class="anime-rating">
             <span class="rating-star">★</span>
@@ -160,13 +180,11 @@ function openModal(anime) {
         <span class="match-badge">${anime.match_count} genre cocok</span>
     `;
 
-    // Genres
     document.getElementById('modalGenres').innerHTML = anime.genres.split(', ').map(g => {
         const isMatched = selectedGenres.includes(g);
         return `<span class="genre-tag ${isMatched ? 'matched' : ''}">${g}</span>`;
     }).join('');
 
-    // Synopsis
     document.getElementById('modalSynopsis').textContent = anime.synopsis;
 
     overlay.classList.add('active');
@@ -188,11 +206,15 @@ function _closeModal() {
     document.body.style.overflow = '';
 }
 
-// Close modal dengan Escape
+// ── KEYBOARD ──
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') _closeModal();
+    if (e.key === 'Escape') {
+        _closeModal();
+        _closeWarning();
+    }
 });
 
+// ── HEADER CLICK ──
 document.querySelector('header h1').addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.documentElement.scrollTop = 0;
